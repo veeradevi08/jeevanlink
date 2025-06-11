@@ -1,9 +1,320 @@
- ABSTRACT
-Title: JeevanLink – Organ Donor & Receiver Smart Matching Platform
+JeevanLink Project Documentation
+1. Project Overview
+JeevanLink is a web application designed to connect individuals in need of organ or blood donations with potential donors. It provides a platform for users to register as donors, post urgent requests for organs/blood, find matching donors, and communicate interest in specific requests. The application aims to streamline the process of connecting donors and recipients, especially in urgent situations.
 
-Abstract:
-JeevanLink is an AI-powered smart organ donation platform designed to bridge the gap between organ donors and receivers. The system intelligently matches donors and receivers based on medical compatibility, urgency, and geographic location. It offers a beautiful and interactive 3D user interface with real-time notifications, hospital dashboards, and an AI recommendation system to prioritize critical cases. JeevanLink aims to save lives with speed, transparency, and technology.
+2. Key Features
+User Authentication: Secure signup and login for users.
 
+Donor Registration: Users can register as organ/blood donors with their details (name, contact, organ, blood group, city).
 
-setting up the frontend.
-npx create-react-app .
+Request Posting: Authenticated users can post urgent requests for specific organs or blood types.
+
+Urgent Request Notification: When an urgent request is posted, all registered donors are automatically notified via email.
+
+Donor Matching & Search: Donors can browse and search for requests based on organ, blood group, and city.
+
+Express Interest/In-app Messaging: Donors can express interest in a request, which sends an in-app message (acting as a notification/initial contact) to the requester.
+
+My Requests Dashboard: Users can view their own posted requests and all messages/interests received for those requests.
+
+Profile Management: Users can view and edit their name, phone number, and password.
+
+Request Management: Users can delete their own posted requests.
+
+3. Technical Stack
+JeevanLink is built using a Python Flask backend with SQLite for the database, and standard HTML with Tailwind CSS for the frontend.
+
+3.1. Backend (Python/Flask)
+The core of the application logic resides in app.py, which is a Flask application.
+
+Flask (Flask Framework - Flask==2.3.2)
+
+Use in Project: The micro-framework that underpins the entire web application. It handles:
+
+Routing (@app.route): Directing incoming web requests to the appropriate Python functions (e.g., /signup, /donor).
+
+Templating (render_template): Integrating Python data into HTML files to generate dynamic web pages.
+
+Request Handling (request): Accessing incoming form data (request.form) and URL parameters (request.args).
+
+Sessions (session): Managing user login status and storing temporary user-specific data across requests.
+
+Flashing (flash): Displaying one-time messages to the user (e.g., "Login successful!", "Passwords do not match!").
+
+Werkzeug (WSGI Utility Library - Werkzeug==2.3.7)
+
+Use in Project: A comprehensive WSGI utility library that Flask uses internally. Specifically, this project directly uses werkzeug.security for:
+
+generate_password_hash: Hashing user passwords securely before storing them in the database. This is crucial for security, as it stores a non-reversible hash instead of the plain password.
+
+check_password_hash: Verifying a user's entered password against the stored hash during login.
+
+sqlite3 (Python's Built-in SQLite Interface)
+
+Use in Project: The default database for the application. It's a lightweight, file-based relational database.
+
+sqlite3.connect(DB_NAME): Establishes a connection to the jeevanlink.db file.
+
+conn.cursor(): Creates a cursor object to execute SQL commands.
+
+c.execute(): Runs SQL queries (CREATE TABLE, INSERT, SELECT, UPDATE, DELETE).
+
+conn.commit(): Saves changes made to the database.
+
+conn.close(): Closes the database connection.
+
+Pros in this project: Simple to set up, no external database server needed for local development.
+
+Cons for Production (Discussed): Not suitable for production environments due to ephemeral filesystems on cloud platforms (data loss on restart/redeploy) and lack of concurrent write support.
+
+smtplib (SMTP Protocol Client - Python Standard Library)
+
+Use in Project: Used to send emails (specifically for urgent request notifications and donor interest emails).
+
+smtplib.SMTP_SSL('smtp.gmail.com', 465): Establishes a secure SMTP connection to Gmail's server (port 465 for SSL).
+
+smtp.login(sender, password): Authenticates with the email server using provided credentials.
+
+smtp.send_message(msg): Sends the prepared email message.
+
+email.mime.text.MIMEText (MIME Email Creation - Python Standard Library)
+
+Use in Project: Used in conjunction with smtplib to construct the actual email message content, including subject, sender, and recipient.
+
+MIMEText(body): Creates an email message object from a plain text body.
+
+msg['Subject'], msg['From'], msg['To']: Sets the various headers of the email.
+
+os (Operating System Interface - Python Standard Library)
+
+Use in Project: Primarily used to access environment variables.
+
+os.getenv('VARIABLE_NAME'): Retrieves the value of an environment variable. Crucial for securely loading email credentials (EMAIL_USER, EMAIL_PASS).
+
+datetime, timedelta (Date and Time Utilities - Python Standard Library)
+
+Use in Project: Used to manage timestamps and calculate expiry dates for requests.
+
+datetime.now(): Gets the current date and time.
+
+timedelta(days=30): Creates a duration of 30 days.
+
+datetime.now() + timedelta(days=30): Calculates a request expiry date 30 days from the current time.
+
+.strftime('%Y-%m-%d %H:%M:%S'): Formats datetime objects into strings suitable for database storage.
+
+datetime.strptime(date_string, format): Parses date strings from the database back into datetime objects for comparison.
+
+python-dotenv (python-dotenv==1.0.0)
+
+Use in Project: Facilitates loading environment variables from a .env file during local development. This keeps sensitive information (like API keys, email passwords) out of your code and Git repository.
+
+load_dotenv(): Call this function at the start of your script to load variables from .env into os.getenv().
+
+gunicorn (gunicorn==21.2.0)
+
+Use in Project: A production-ready WSGI (Web Server Gateway Interface) HTTP server for Python web applications.
+
+Why it's used: The Flask development server is not robust enough for production. Gunicorn handles concurrent requests, provides stability, and integrates well with deployment platforms.
+
+How it's used: Specified in the Procfile (web: gunicorn app:app) to tell Render how to run your application in a production environment.
+
+3.2. Frontend (HTML/Tailwind CSS)
+HTML
+
+Use in Project: Provides the structure and content of all web pages (index.html, signup.html, donor.html, etc.).
+
+Uses Jinja2 templating ({{ variable }}, {% for %}, {% if %}) to dynamically display data fetched from the Flask backend.
+
+Tailwind CSS
+
+Use in Project: A utility-first CSS framework used for styling the entire application.
+
+script src="https://cdn.tailwindcss.com": Loaded via CDN in your HTML files, providing a vast set of pre-defined CSS classes.
+
+Advantages: Rapid prototyping, consistent design, responsive layouts without writing custom CSS from scratch for every element.
+
+Inter Font
+
+Use in Project: Specified in custom CSS (within <style> tags or linked CSS files) to apply a modern, clean typography across the application.
+
+3.3. Database Management (SQLite)
+The database schema is defined and initialized in the init_db() function:
+
+users table: Stores user registration details.
+
+id: Primary key, auto-incrementing.
+
+name: User's full name.
+
+email: User's email (unique, used for login).
+
+password: Hashed password.
+
+phone: User's phone number.
+
+donors table: Stores information about registered donors.
+
+id: Primary key, auto-incrementing.
+
+name: Donor's name.
+
+phone: Donor's phone.
+
+email: Donor's email.
+
+organ: Organ they are donating (e.g., "Kidney", "Blood", "Other").
+
+organ_other: Additional detail if organ is "Other".
+
+blood_group: Blood group.
+
+city: City of the donor.
+
+requests table: Stores details of organ/blood requests.
+
+id: Primary key, auto-incrementing.
+
+requester_user_id: Foreign key linking to the users table, identifying who posted the request.
+
+blood_group: Blood group needed.
+
+organ: Organ needed (e.g., "Kidney", "Blood Request").
+
+organ_other: Additional detail if organ is "Other".
+
+requester_address: Address of the requester.
+
+requester_phone: Contact phone for the requester (specific to request).
+
+urgent: Integer flag (0 for non-urgent, 1 for urgent).
+
+requested_at: Timestamp when the request was made.
+
+expiry_date: Timestamp for when the request expires (default 30 days from creation).
+
+messages table: Stores in-app messages between donors and requesters.
+
+id: Primary key, auto-incrementing.
+
+request_id: Foreign key linking to the requests table (which request the message is about).
+
+sender_user_id: Foreign key linking to the users table (who sent the message).
+
+message_content: The actual message text.
+
+timestamp: When the message was sent.
+
+4. Core Logic Breakdown (Key Functions)
+init_db(): Initializes the SQLite database and creates all necessary tables (users, donors, requests, messages) if they don't already exist. This function runs only once when the Flask app starts.
+
+get_user_info(user_id): A helper function to fetch a user's name, email, and phone by their ID from the users table.
+
+signup(): Handles user registration. Collects name, email, phone, and password, hashes the password, and stores the user in the users table. Includes validation for matching passwords and unique emails.
+
+login(): Authenticates users. Checks email and password against stored hashes and sets up the session variables (user_id, user_name, user_email, user_phone) upon successful login.
+
+logout(): Clears the user's session variables, effectively logging them out.
+
+donor(): Handles the donor registration form. Collects donor details and inserts them into the donors table.
+
+find_match(): Allows users to search for registered donors based on criteria like organ, blood group, and city. It retrieves matching donor records from the donors table.
+
+post_request(): Enables authenticated users to post new organ/blood requests. It captures required details, sets an expiry date (30 days by default), stores the request in the requests table, and triggers the notify_all_donors_of_urgent_request function if the request is marked as urgent.
+
+notify_all_donors_of_urgent_request(requester_info): This critical function sends an email to all registered donors when an urgent request is posted. It fetches donor emails from the donors table and uses smtplib to send individualized emails with a link to the request details.
+
+send_interest_message(): Allows a logged-in donor to express interest in a specific request. It constructs a message with the donor's contact details and stores it in the messages table, visible to the requester.
+
+donor_dashboard(): Displays all currently active (non-expired) requests from the requests table for donors to browse.
+
+my_requests(): Provides a personal dashboard for the logged-in requester. It lists all requests they have posted and also fetches and displays all messages (interests) received for each of their requests.
+
+delete_request(): Allows a user to delete their own posted request. It also deletes any associated messages to maintain database integrity.
+
+profile(): Displays the logged-in user's profile information, a list of requests they have expressed interest in (as a donor), and a list of requests they have posted (as a requester), along with any messages received for their requests.
+
+edit_profile(): Enables users to update their name, phone number, and change their password. Includes validation for current password and new password confirmation.
+
+request_details(request_id): Displays the full details of a specific organ/blood request.
+
+5. Deployment Process Summary
+The project was deployed to Render.com, a Platform-as-a-Service (PaaS), following these general steps:
+
+Project Structuring: Ensuring app.py, requirements.txt, and Procfile were in the root directory, and HTML templates were in the templates/ folder.
+
+Dependency Listing (requirements.txt): A file was created to explicitly list all Python libraries and their versions required (Flask, Werkzeug, python-dotenv, gunicorn).
+
+Process Configuration (Procfile): A Procfile was created with web: gunicorn app:app to instruct Render to run the Flask application using the Gunicorn WSGI server.
+
+Version Control (Git & GitHub):
+
+The local project was initialized as a Git repository (git init).
+
+All project files were added and committed (git add ., git commit).
+
+The local branch was renamed to main (git branch -M main).
+
+The local repository was linked to an empty remote GitHub repository (git remote add origin YOUR_GITHUB_URL).
+
+The entire codebase was pushed to GitHub (git push -u origin main).
+
+Render Setup:
+
+A new "Web Service" was created on Render.
+
+The GitHub repository (veeradevi08/jeevanlink) was connected.
+
+Service details (name, region: Singapore, branch: main, root directory, runtime: Python 3) were configured.
+
+Environment Variables: Crucially, EMAIL_USER and EMAIL_PASS were added directly to Render's environment variables (not committed to Git) for secure access by the application.
+
+The Build Command (pip install -r requirements.txt) and Start Command (gunicorn app:app) were automatically detected.
+
+Deployment: The service was initiated, and Render handled the build, installation, and launching of the Flask application.
+
+Once deployed, Render provided a public URL, allowing the application to be accessed from anywhere, and email links generated with _external=True now function correctly.
+
+6. Challenges Faced & Solutions
+Pylance "Undefined Variable" Errors: Resolved by ensuring variables were properly defined and by iterating correctly through lists (e.g., donor_emails).
+
+'donor' is undefined Jinja2 Error: Fixed by updating edit_profile.html to correctly reference the user_info dictionary passed from Flask instead of an old donor variable.
+
+psycopg2 Import Error: This was a local Pylance/IDE configuration issue, not a runtime error. It was addressed by ensuring psycopg2-binary was installed and the VS Code Python interpreter was correctly selected, though for final deployment, the project reverted to SQLite.
+
+Email Link Not Opening on Mobile (Locally): Identified as an issue due to local host URLs not being publicly accessible. The solution was full deployment to a public server (Render), which generates absolute, public URLs via _external=True in url_for.
+
+SQLite for Production: Acknowledged the limitations of SQLite (ephemeral filesystem, data loss on restart) for production deployments and recommended migrating to a robust database like PostgreSQL for future improvements. The current deployment proceeds with SQLite given the "no more code changes" constraint.
+
+Procfile Invalid Errors: Addressed by correcting the precise filename (Procfile vs. procfile.txt), content (web: gunicorn app:app), and ensuring no hidden characters or incorrect encoding. This also involved understanding Windows file naming quirks.
+
+Git Authentication and Push Errors (Author identity unknown, src refspec main does not match any, 'origin' does not appear to be a git repository): These were resolved step-by-step by:
+
+Configuring global Git user identity (git config --global).
+
+Renaming the local branch from master to main (git branch -M main).
+
+Correctly adding the remote GitHub repository URL (git remote add origin YOUR_URL).
+
+Authorizing Git Credential Manager through the browser.
+
+Finally, successfully pushing the code (git push -u origin main).
+
+7. Future Enhancements & Improvements
+Database Migration: Transition from SQLite to a production-grade database like PostgreSQL (using psycopg2 and possibly Flask-Migrate/Alembic for schema management) to ensure data persistence and scalability.
+
+Enhanced Messaging System: Implement real-time messaging using WebSockets (e.g., Flask-SocketIO) for instant communication between donors and requesters, rather than just initial interest messages.
+
+Admin Panel: Create an administrative interface to manage users, donors, and requests.
+
+Search Filters: Improve search functionality on find_match and donor_dashboard with more filters (e.g., date range for requests, organ status).
+
+Security Enhancements: Implement more robust input validation, rate limiting, and potentially explore more advanced authentication methods if needed.
+
+Frontend Polish: Further improve UI/UX with more interactive elements, clearer states, and potentially a dedicated mobile-responsive design beyond basic Tailwind.
+
+User Notifications: Add more comprehensive in-app or email notifications for various events (e.g., request expiration warnings).
+
+Testing: Implement unit and integration tests for backend logic and frontend components.
+
+This documentation should provide you with a solid foundation for understanding and discussing your JeevanLink project.
