@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile - JeevanLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #cbeaff 50%, #e0c3fc 100%); /* Consistent background */
+            color: #333;
+        }
+        .form-container-shadow {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        .form-container-shadow:hover {
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+        input:focus {
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.4);
+        }
+        .button-transition {
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        .button-transition:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            opacity: 0.9;
+        }
+        .text-header-shadow {
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center pt-6 px-4 pb-12">
+    <h1 class="text-4xl font-extrabold text-purple-800 mb-8 text-header-shadow">Edit <span class="text-red-600">Profile</span></h1>
+
+    <div class="bg-white bg-opacity-95 rounded-xl p-8 form-container-shadow max-w-md w-full mb-8">
+        {% if user_info %}
+            <h2 class="text-2xl font-bold text-purple-700 mb-6 text-header-shadow">Update Your Information</h2>
+
+            <form action="{{ url_for('edit_profile') }}" method="POST" class="space-y-6">
+                <!-- Name Field -->
+                <div>
+                    <label for="name" class="block text-purple-700 font-semibold mb-2">Full Name</label>
+                    <input type="text" id="name" name="name" value="{{ user_info.name }}" required
+                           class="w-full px-4 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+
+                <!-- Phone Field -->
+                <div>
+                    <label for="phone" class="block text-purple-700 font-semibold mb-2">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" value="{{ user_info.phone }}" required
+                           class="w-full px-4 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+
+                <!-- Email (Display only, not editable directly) -->
+                <div>
+                    <label for="email" class="block text-gray-700 font-semibold mb-2">Email (Not Editable)</label>
+                    <input type="email" id="email" value="{{ user_info.email }}" disabled
+                           class="w-full px-4 py-2 border border-gray-300 bg-gray-100 rounded cursor-not-allowed">
+                </div>
+
+                <div class="border-t border-purple-200 pt-6 mt-6">
+                    <h3 class="text-xl font-semibold text-purple-700 mb-4">Change Password (Optional)</h3>
+                    <!-- Current Password -->
+                    <div>
+                        <label for="current_password" class="block text-purple-700 font-semibold mb-2">Current Password</label>
+                        <input type="password" id="current_password" name="current_password"
+                               class="w-full px-4 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+                               placeholder="Enter current password">
+                    </div>
+
+                    <!-- New Password -->
+                    <div>
+                        <label for="new_password" class="block text-purple-700 font-semibold mb-2">New Password</label>
+                        <input type="password" id="new_password" name="new_password"
+                               class="w-full px-4 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+                               placeholder="Enter new password">
+                    </div>
+
+                    <!-- Confirm New Password -->
+                    <div>
+                        <label for="confirm_new_password" class="block text-purple-700 font-semibold mb-2">Confirm New Password</label>
+                        <input type="password" id="confirm_new_password" name="confirm_new_password"
+                               class="w-full px-4 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+                               placeholder="Confirm new password">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg button-transition">
+                    Save Changes
+                </button>
+            </form>
+        {% else %}
+            <p class="text-gray-600 text-center text-lg py-4">User information not found. Please log in.</p>
+        {% endif %}
+
+        <div class="mt-8 text-center">
+            <a href="{{ url_for('profile') }}" class="inline-block bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-full font-semibold button-transition text-lg">
+                Cancel / Back to Profile
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="fixed bottom-4 right-4 space-y-2 z-50">
+          {% for category, message in messages %}
+            <div class="px-4 py-2 rounded shadow transition-all duration-300
+              {% if category == 'error' %}bg-red-500
+              {% elif category == 'success' %}bg-green-500
+              {% elif category == 'info' %}bg-blue-500
+              {% else %}bg-gray-500{% endif %} text-white">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>

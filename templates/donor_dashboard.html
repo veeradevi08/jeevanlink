@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donor Dashboard - JeevanLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #fce4ec 0%, #e1bee7 50%, #d1c4e9 100%); /* Light pink, lavender, violet shades */
+            color: #333;
+        }
+        .container-shadow {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            transition: all 0.4s ease-in-out;
+            border: 1px solid rgba(149, 117, 205, 0.3);
+        }
+        .container-shadow:hover {
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            transform: translateY(-5px);
+        }
+        .card-link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+        .card-animate {
+            background-color: rgba(255, 255, 255, 0.9);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            border: 1px solid rgba(186, 104, 200, 0.2);
+        }
+        .card-animate:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+        }
+        .button-transition {
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        .button-transition:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            opacity: 0.9;
+        }
+        .text-header-shadow {
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.15);
+        }
+        .urgent-request {
+            border-left: 6px solid #ef4444;
+            background-color: #fff5f5;
+            position: relative;
+            overflow: hidden;
+            animation: urgent-glow-pulse 2s infinite alternate;
+        }
+        .urgent-request .urgent-tag {
+            content: 'URGENT';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ef4444;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            animation: pulse-animation 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-animation {
+            from {
+                transform: scale(1);
+                opacity: 1;
+            }
+            to {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes urgent-glow-pulse {
+            0% {
+                box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+                border-color: #fca5a5;
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 30px rgba(239, 68, 68, 0.6);
+                border-color: #ef4444;
+            }
+            100% {
+                box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+                border-color: #fca5a5;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center pt-6 px-4 pb-12">
+    <h1 class="text-5xl font-extrabold text-purple-800 mb-8 text-header-shadow">Dashboard <span class="text-red-600">JeevanLink</span></h1>
+
+    <div class="bg-white bg-opacity-95 rounded-xl p-8 container-shadow max-w-3xl w-full mb-8">
+        <h2 class="text-3xl font-bold text-purple-700 mb-6 text-header-shadow">Welcome, {{ session.get('user_name', 'User') }}!</h2>
+        <p class="text-lg text-gray-700 mb-8 leading-relaxed">From here, you can manage your donor profile or view the latest requests from those in need.</p>
+
+        <h3 class="text-2xl font-semibold text-purple-700 mb-5 border-b-2 border-purple-300 pb-2">Latest Requests from Recipients</h3>
+        {% if requests %}
+            <div class="space-y-6">
+                {% for req in requests %}
+                <a href="{{ url_for('request_details', request_id=req[0]) }}" class="card-link">
+                    <div class="bg-white p-6 rounded-lg shadow-lg card-animate {% if req[7] == 1 %}urgent-request{% endif %}">
+                        <p class="text-xl font-bold text-gray-800 mb-2">Requester: <span class="text-purple-600">{{ req[1] }}</span></p>
+                        <p class="text-md text-gray-700 mb-1">
+                            <strong class="text-pink-600">Needed:</strong>
+                            {% if req[3] == 'Other' and req[4] %}
+                                {{ req[4] }} (Blood Group: {{ req[2] }})
+                            {% else %}
+                                {{ req[3] }} (Blood Group: {{ req[2] }})
+                            {% endif %}
+                        </p>
+                        <p class="text-md text-gray-700 mb-1"><strong>Address:</strong> {{ req[5] }}</p>
+                        <p class="text-md text-gray-700"><strong>Mobile:</strong> {{ req[6] }}</p>
+                        
+                        <p class="text-sm text-gray-500 mt-3">Requested On: {{ req[8] }}</p>
+                        
+                        {% if req[7] == 1 %}
+                            <span class="urgent-tag">URGENT</span>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-gray-600 text-center text-lg py-4">No requests posted yet.</p>
+        {% endif %}
+
+        <div class="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <a href="{{ url_for('my_requests') }}" class="block">
+                <button type="button" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-6 py-4 rounded-xl font-bold text-lg button-transition">
+                    My Requests & Messages
+                </button>
+            </a>
+            <a href="{{ url_for('post_request') }}" class="block">
+                <button type="button" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-4 rounded-xl font-bold text-lg button-transition">
+                    Post a New Request
+                </button>
+            </a>
+            <a href="{{ url_for('find_match') }}" class="block">
+                <button type="button" class="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white px-6 py-4 rounded-xl font-bold text-lg button-transition">
+                    Find Donors
+                </button>
+            </a>
+            <a href="{{ url_for('profile') }}" class="block"> {# Added link to new Profile page #}
+                <button type="button" class="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white px-6 py-4 rounded-xl font-bold text-lg button-transition">
+                    My Profile
+                </button>
+            </a>
+        </div>
+        <div class="mt-8 text-center">
+            <a href="{{ url_for('home') }}" class="inline-block bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-full font-semibold button-transition text-lg">
+                Back to Home
+            </a>
+            <a href="{{ url_for('logout') }}" class="inline-block bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-semibold button-transition text-lg ml-4">
+                Logout
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="fixed bottom-4 right-4 space-y-2 z-50">
+          {% for category, message in messages %}
+            <div class="px-4 py-2 rounded shadow transition-all duration-300
+              {% if category == 'error' %}bg-red-500
+              {% elif category == 'success' %}bg-green-500
+              {% elif category == 'info' %}bg-blue-500
+              {% else %}bg-gray-500{% endif %} text-white">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>

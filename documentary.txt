@@ -1,0 +1,9 @@
+ ABSTRACT
+Title: JeevanLink – Organ Donor & Receiver Smart Matching Platform
+
+Abstract:
+JeevanLink is an AI-powered smart organ donation platform designed to bridge the gap between organ donors and receivers. The system intelligently matches donors and receivers based on medical compatibility, urgency, and geographic location. It offers a beautiful and interactive 3D user interface with real-time notifications, hospital dashboards, and an AI recommendation system to prioritize critical cases. JeevanLink aims to save lives with speed, transparency, and technology.
+
+
+setting up the frontend.
+npx create-react-app .

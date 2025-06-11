@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Details - JeevanLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom, #fef2f2 0%, #e0c3fc 50%, #cbeaff 100%); /* Light, welcoming gradient */
+            color: #333;
+        }
+        .container-shadow {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        .container-shadow:hover {
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+        .card-animate {
+            background-color: rgba(255, 255, 255, 0.98);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border: 1px solid rgba(186, 104, 200, 0.2);
+        }
+        .card-animate:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        .button-transition {
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        .button-transition:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            opacity: 0.9;
+        }
+        .text-header-shadow {
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .urgent-tag {
+            background-color: #ef4444; /* Red */
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 0.5rem;
+            animation: pulse-animation 1.5s infinite alternate;
+        }
+        @keyframes pulse-animation {
+            from {
+                transform: scale(1);
+                opacity: 1;
+            }
+            to {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center pt-6 px-4 pb-12">
+    <h1 class="text-4xl font-extrabold text-purple-800 mb-8 text-header-shadow">Request <span class="text-red-600">Details</span></h1>
+
+    <div class="bg-white bg-opacity-95 rounded-xl p-8 container-shadow max-w-3xl w-full mb-8">
+        {% if request_info and requester_info %}
+            <h2 class="text-2xl font-bold text-purple-700 mb-6 text-header-shadow">Request from {{ requester_info.name }}</h2>
+
+            <div class="space-y-4 mb-8">
+                <div class="bg-gray-50 p-6 rounded-lg shadow-inner border border-purple-200">
+                    <p class="text-xl font-bold text-gray-800 mb-2">Needed:
+                        {% if request_info.organ == 'Other' and request_info.organ_other %}
+                            {{ request_info.organ_other }} (Blood Group: {{ request_info.blood_group }})
+                        {% else %}
+                            {{ request_info.organ }} (Blood Group: {{ request_info.blood_group }})
+                        {% endif %}
+                        {% if request_info.urgent == 1 %}
+                            <span class="urgent-tag">URGENT</span>
+                        {% endif %}
+                    </p>
+                    <p class="text-md text-gray-700 mb-1"><strong>Address:</strong> {{ request_info.requester_address }}</p>
+                    <p class="text-md text-gray-700"><strong>Mobile:</strong> {{ request_info.requester_phone }}</p>
+                    <p class="text-sm text-gray-500 mt-3">Requested On: {{ request_info.requested_at }}</p>
+                    <p class="text-sm text-gray-500">Expires On: {{ request_info.expiry_date if request_info.expiry_date else 'N/A' }}</p>
+                    {% if request_info.is_expired %}
+                        <p class="text-red-500 font-bold mt-2">This request has expired.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <h3 class="text-2xl font-semibold text-purple-700 mb-5 border-b-2 border-purple-300 pb-2">Requester Contact Information</h3>
+            <p class="text-lg text-gray-700 mb-2"><strong>Name:</strong> {{ requester_info.name }}</p>
+            <p class="text-lg text-gray-700 mb-2"><strong>Email:</strong> <a href="mailto:{{ requester_info.email }}" class="text-blue-600 hover:underline">{{ requester_info.email }}</a></p>
+            <p class="text-lg text-gray-700 mb-8"><strong>Mobile:</strong> <a href="tel:{{ requester_info.phone }}" class="text-blue-600 hover:underline">{{ requester_info.phone }}</a></p>
+
+            <!-- Send In-App Message Button (from current logged-in donor to this requester) -->
+            {% if not request_info.is_expired %}
+            <form action="{{ url_for('send_interest_message') }}" method="POST" class="mt-5 text-right">
+                <input type="hidden" name="request_id" value="{{ request_info.id }}">
+                <input type="hidden" name="requester_user_id_for_message" value="{{ requester_info.id }}">
+                <button type="submit" class="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-6 py-3 rounded-full font-semibold button-transition">
+                    I'm Interested (Send Message)
+                </button>
+            </form>
+            {% else %}
+                <p class="text-center text-red-600 font-semibold text-xl mt-6">Cannot send messages to expired requests.</p>
+            {% endif %}
+
+        {% else %}
+            <p class="text-gray-600 text-center text-lg py-4">Request details not found.</p>
+        {% endif %}
+
+        <div class="mt-8 text-center">
+            <a href="{{ url_for('donor_dashboard') }}" class="inline-block bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-full font-semibold button-transition text-lg">
+                Back to Donor Dashboard
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="fixed bottom-4 right-4 space-y-2 z-50">
+          {% for category, message in messages %}
+            <div class="px-4 py-2 rounded shadow transition-all duration-300
+              {% if category == 'error' %}bg-red-500
+              {% elif category == 'success' %}bg-green-500
+              {% elif category == 'info' %}bg-blue-500
+              {% else %}bg-gray-500{% endif %} text-white">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>

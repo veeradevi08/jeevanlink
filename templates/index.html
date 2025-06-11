@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JeevanLink - Connect, Donate, Save Lives</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lottie Player CDN -->
+    <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* More dynamic, ethereal radial gradient background */
+            background: radial-gradient(circle at top left, #fbcfe8 0%, #e879f9 50%, #a78bfa 100%); /* Light pink to vibrant pink-purple to purple */
+            color: #333;
+        }
+        .header-bg {
+            /* Header with a deeper pink-purple gradient */
+            background: linear-gradient(to right, #db2777, #9333ea); /* Rose-600 to Purple-700 */
+        }
+        /* Styles for nav bar link animations - Underline effect */
+        nav ul li a {
+            position: relative;
+            display: inline-block; /* Allows transform to work properly */
+            color: white; /* Default text color */
+            padding-bottom: 3px; /* Space for the underline */
+            transition: color 0.3s ease;
+        }
+        nav ul li a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background-color: #fce7f3; /* Lighter pink for the underline */
+            transition: width 0.3s ease;
+        }
+        nav ul li a:hover {
+            color: #fce7f3; /* Lighter pink on hover */
+        }
+        nav ul li a:hover::after {
+            width: 100%; /* Expand underline on hover */
+        }
+
+        .btn-primary {
+            /* Primary button with a vibrant pink-red gradient */
+            background: linear-gradient(to right, #ec4899, #f43f5e); /* Pink-500 to Rose-500 */
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.6);
+        }
+        .btn-secondary {
+            /* Secondary button with a softer purple-pink gradient */
+            background: linear-gradient(to right, #a78bfa, #d946ef); /* Purple-400 to Fuchsia-500 */
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.4);
+        }
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(167, 139, 250, 0.6);
+        }
+        .card-bg {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            /* Added a subtle glow and a matching border for a more distinct look */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 0 40px rgba(220, 38, 127, 0.2);
+            border: 2px solid rgba(220, 38, 127, 0.3); /* Subtle, matching border color from Rose-500 */
+            transition: all 0.3s ease-in-out; /* Smooth transition for hover effects */
+        }
+        .card-bg:hover {
+            transform: scale(1.01); /* Slightly enlarge on hover */
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.15), 0 0 50px rgba(220, 38, 127, 0.3); /* Enhanced glow on hover */
+        }
+        .text-shadow-custom {
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        .dashboard-link-buttons button {
+            background: linear-gradient(to right, #6366f1, #8b5cf6); /* Indigo to darker Purple */
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4);
+        }
+        .dashboard-link-buttons button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.6);
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Header Section -->
+    <header class="header-bg text-white py-4 shadow-lg rounded-b-xl">
+        <div class="container mx-auto flex justify-between items-center px-4 flex-wrap">
+            <h1 class="text-3xl font-bold text-shadow-custom mb-2 sm:mb-0">JeevanLink</h1>
+            <nav class="w-full sm:w-auto">
+                <ul class="flex flex-wrap justify-center sm:justify-end gap-x-4 sm:gap-x-6 gap-y-2">
+                    <li><a href="{{ url_for('donor') }}">Become a Donor</a></li>
+                    <li><a href="{{ url_for('post_request') }}">Post a Request</a></li>
+                    <li><a href="{{ url_for('find_match') }}">Find Donors</a></li>
+                    {% if 'user_id' in session %}
+                        <li><a href="{{ url_for('donor_dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('my_requests') }}">My Requests</a></li>
+                        <li><a href="{{ url_for('profile') }}">My Profile</a></li> {# Added link to new Profile page #}
+                        <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('login') }}">Login</a></li>
+                        <li><a href="{{ url_for('signup') }}">Sign Up</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Section -->
+    <main class="flex-grow flex items-center justify-center py-12 px-4">
+        <div class="text-center card-bg p-8 rounded-lg max-w-3xl w-full">
+            <!-- Lottie Heart Animation -->
+            <dotlottie-player
+                src="https://lottie.host/902d01fc-feb1-4aa7-aca5-09772ea4cd06/2QZDahsUfM.json"
+                background="transparent"
+                speed="1"
+                style="width: 150px; height: 150px; margin: 0 auto 1.5rem;"
+                loop
+                autoplay
+                aria-label="Heart animation">
+            </dotlottie-player>
+
+            <h2 class="text-5xl font-extrabold text-gray-800 mb-6 leading-tight text-shadow-custom">
+                Connect. Donate. <span class="text-pink-600">Save Lives.</span>
+            </h2>
+            <p class="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">
+                JeevanLink is your dedicated platform for connecting organ and blood donors with recipients in need. Make a difference today!
+            </p>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="{{ url_for('donor') }}" class="btn-primary text-white font-semibold py-3 px-8 rounded-full text-lg">
+                    Become a Donor
+                </a>
+                <a href="{{ url_for('post_request') }}" class="btn-secondary text-white font-semibold py-3 px-8 rounded-full text-lg">
+                    Post a Request
+                </a>
+            </div>
+            <div class="mt-6">
+                <a href="{{ url_for('find_match') }}" class="text-purple-600 hover:underline font-medium text-lg">
+                    Looking for Donors? Find a Match Now.
+                </a>
+            </div>
+            
+            {% if 'user_id' not in session %}
+            <div class="mt-8 text-gray-700">
+                Already have an account? <a href="{{ url_for('login') }}" class="text-purple-600 hover:underline font-semibold">Login here</a>
+            </div>
+            {% else %}
+            {# New Section for Logged-In User Navigation #}
+            <div class="mt-10 pt-6 border-t-2 border-gray-200">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4 text-shadow-custom">Welcome back, {{ session.get('user_name', 'User') }}!</h3>
+                <p class="text-md text-gray-700 mb-6">What would you like to do today?</p>
+                <div class="dashboard-link-buttons flex-col sm:flex-row"> {# Changed to flex-col for better mobile stacking #}
+                    <a href="{{ url_for('donor_dashboard') }}">
+                        <button type="button">Go to Donor Dashboard</button>
+                    </a>
+                    <a href="{{ url_for('my_requests') }}">
+                        <button type="button">Manage My Requests</button>
+                    </a>
+                    <a href="{{ url_for('profile') }}"> {# Added link to new Profile page #}
+                        <button type="button">View My Full Profile</button>
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Footer Section -->
+    <footer class="bg-gray-800 text-white py-4 text-center">
+        <p>&copy; 2025 JeevanLink. All rights reserved. Velisetti Veeradevi.</p>
+    </footer>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="fixed bottom-4 right-4 space-y-2 z-50">
+          {% for category, message in messages %}
+            <div class="px-4 py-2 rounded shadow transition-all duration-300
+              {% if category == 'error' %}bg-red-500
+              {% elif category == 'success' %}bg-green-500
+              {% elif category == 'info' %}bg-blue-500
+              {% else %}bg-gray-500{% endif %} text-white">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>

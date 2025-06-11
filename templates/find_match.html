@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Find a Match - JeevanLink</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+  document.querySelector("form")?.addEventListener("submit", () => {
+    alert("Form is being submitted!");
+  });
+</script>
+
+</head>
+<body class="bg-gradient-to-r from-pink-100 to-purple-200 min-h-screen flex flex-col items-center pt-6 px-4">
+
+  <h1 class="text-4xl font-bold text-purple-800 mb-6">Find a <span class="text-red-600">Match</span></h1>
+
+  <!-- Match Search Form -->
+  <form action="{{ url_for('find_match') }}?from_home=1" method="POST" class="bg-white bg-opacity-90 rounded-lg p-8 shadow-lg max-w-md w-full mb-8">
+    
+    <!-- Organ -->
+    <div class="mb-4">
+      <label for="organ" class="block text-purple-700 font-semibold mb-2">Organ</label>
+      <select id="organ" name="organ" required class="w-full px-3 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <option value="" >Select an organ</option>
+        <option value="Eye">Eye</option>
+        <option value="Kidney">Kidney</option>
+        <option value="Heart">Heart</option>
+        <option value="Liver">Liver</option>
+        <option value="Lung">Lung</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <!-- Blood Group -->
+    <div class="mb-4">
+      <label for="blood_group" class="block text-purple-700 font-semibold mb-2">Blood Group</label>
+      <select id="blood_group" name="blood_group" required class="w-full px-3 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <option value="">Select blood group</option>
+        <option value="A+">A+</option>
+        <option value="A-">A-</option>
+        <option value="B+">B+</option>
+        <option value="B-">B-</option>
+        <option value="AB+">AB+</option>
+        <option value="AB-">AB-</option>
+        <option value="O+">O+</option>
+        <option value="O-">O-</option>
+      </select>
+    </div>
+
+    <!-- City -->
+    <div class="mb-6">
+      <label for="city" class="block text-purple-700 font-semibold mb-2">City (Optional)</label>
+      <input type="text" id="city" name="city"
+        class="w-full px-3 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+        placeholder="Enter city name" />
+    </div>
+<a href="{{ url_for('find_match') }}?from_home=1" id="findMatchBtn"></a>
+    <button type="submit"
+      class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 rounded-lg transition duration-300 shadow-md">
+      Find Matches
+    </button>
+  </a>
+  </form>
+
+  <!-- Display Matches -->
+ {% if searched %}
+    {% if matches %}
+      <div  id="matchesSection" class="max-w-3xl w-full mb-8">
+        <h2 class="text-2xl font-semibold text-purple-800 mb-4">Matching Donors</h2>
+        <div class="space-y-4">
+          {% for donor in matches %}
+            <div class="bg-white bg-opacity-90 rounded-lg p-4 shadow-md border border-purple-300">
+              <p><strong>Name:</strong> {{ donor[0] }}</p>
+              <p><strong>Phone:</strong> {{ donor[1] }}</p>
+              <p><strong>Email:</strong> {{ donor[2] }}</p>
+              <p><strong>Organ:</strong>
+                {% if donor[3] == 'Other' and donor[4] %}
+                  {{ donor[4] }}
+                {% else %}
+                  {{ donor[3] }}
+                {% endif %}
+              </p>
+              <p><strong>Blood Group:</strong> {{ donor[5] }}</p>
+              <p><strong>City:</strong> {{ donor[6] }}</p>
+
+              <!-- Interest Button -->
+              <form action="{{ url_for('send_interest') }}" method="POST" class="mt-4">
+                <input type="hidden" name="donor_email" value="{{ donor[2] }}">
+                <input type="hidden" name="donor_name" value="{{ donor[0] }}">
+                <input type="hidden" name="requester_name" value="Receiver (Anonymous)">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+                  I'm Interested
+                </button>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="bg-white bg-opacity-90 rounded-lg p-6 shadow-lg text-center max-w-md w-full border border-red-300">
+        <h2 class="text-2xl font-semibold text-red-600 mb-2">No Matches Found</h2>
+        <p class="text-gray-700">We couldn't find any donor matching your criteria. Please try again later.</p>
+      </div>
+    {% endif %}
+  {% endif %}
+  <!-- Add this AFTER the "No Matches Found" div -->
+{% if not matches and searched %}
+  <div id="noMatchAlert" class="bg-white bg-opacity-90 rounded-xl p-6 shadow-lg max-w-md w-full border-2 border-red-300 mt-6 text-center animate-pulse">
+    <h2 class="text-2xl font-bold text-red-600 mb-2">⚠️ No Donors Found</h2>
+    <p class="text-purple-700 mb-4">But you can post a request! Donors will be notified.</p>
+    
+    <!-- Button with homepage gradient colors -->
+    <a href="{{ url_for('post_request') }}" 
+       class="inline-block bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 
+              text-white font-bold py-3 px-6 rounded-full shadow-md transition-all duration-300">
+      Post a Request Now
+    </a>
+  </div>
+{% endif %}
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="fixed bottom-4 right-4 space-y-2 z-50">
+        {% for category, message in messages %}
+          <div class="px-4 py-2 rounded shadow transition-all duration-300
+            {% if category == 'error' %}bg-red-500
+            {% elif category == 'success' %}bg-green-500
+            {% elif category == 'info' %}bg-blue-500
+            {% else %}bg-gray-500{% endif %} text-white">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Get scroll target from Flask template
+    const scrollTarget = "{{ 'matchesSection' if matches else 'noMatchAlert' }}";
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.has('from_home')) {
+      setTimeout(function() {
+        const targetElement = document.getElementById(scrollTarget);
+        
+        if (targetElement) {
+          // Smooth scroll to section
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+          
+          // Visual feedback
+          targetElement.classList.add('ring-4', 'ring-purple-400');
+          setTimeout(function() {
+            targetElement.classList.remove('ring-4', 'ring-purple-400');
+          }, 2000);
+        }
+      }, 300); // Small delay for page stabilization
+    }
+  });
+</script>
+
+</body>
+</html>

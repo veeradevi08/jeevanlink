@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Become a Donor - JeevanLink</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Lottie Player CDN -->
+  <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+
+  <style>
+    /* Hide the other organ input by default */
+    #other-organ-input {
+      display: none;
+    }
+
+    dotlottie-player {
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-r from-pink-100 to-purple-200 min-h-screen flex flex-col items-center pt-6 px-4">
+
+  <!-- Heading & Animation -->
+  <div class="text-center mb-4">
+    <h1 class="text-4xl font-bold text-purple-800 mb-2">
+      Become a <span class="text-red-600">Donor</span>
+    </h1>
+    <dotlottie-player
+      src="https://lottie.host/d2be950a-52f9-4c88-bf0c-1e4f1c6077a1/SNlnEmU9Rf.lottie"
+      background="transparent"
+      speed="1"
+      style="width: 300px; height: 180px;"
+      loop
+      autoplay>
+    </dotlottie-player>
+  </div>
+
+  <!-- Donor Registration Form -->
+  <form action="{{ url_for('donor') }}" method="POST" class="bg-white bg-opacity-80 rounded-lg p-8 shadow-lg max-w-md w-full">
+    <!-- Name -->
+    <div class="mb-4">
+      <label for="name" class="block text-purple-700 font-semibold mb-2">Full Name</label>
+      <input type="text" id="name" name="name" required
+        class="w-full px-3 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
+    </div>
+
+    <!-- Phone -->
+    <div class="mb-4">
+      <label for="phone" class="block text-purple-700 font-semibold mb-2">Phone Number</label>
+      <input type="tel" id="phone" name="phone" required pattern="[0-9]{10}"
+        title="Please enter a 10-digit phone number"
+        class="w-full px-3 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
+    </div>
+
+    <!-- Email -->
+    <div class="mb-4">
+      <label for="email" class="block text-purple-700 font-semibold mb-2">Email Address</label>
+      <input type="email" id="email" name="email" required
+        class="w-full px-3 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
+    </div>
+
+    <!-- Organ to Donate -->
+    <div class="mb-4">
+      <label for="organ" class="block text-purple-700 font-semibold mb-2">Organ to Donate</label>
+      <select id="organ" name="organ" required
+        class="w-full px-3 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+        onchange="toggleOtherOrganInput(this.value)">
+        <option value="" disabled selected>Select an organ</option>
+        <option value="Eye">Eye</option>
+        <option value="Kidney">Kidney</option>
+        <option value="Heart">Heart</option>
+        <option value="Liver">Liver</option>
+        <option value="Lung">Lung</option>
+        <option value="Other">Other</option>
+      </select>
+      <!-- Other Organ Textbox -->
+      <input type="text" id="other-organ-input" name="other_organ"
+        placeholder="Please specify other organ"
+        class="mt-2 w-full px-3 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
+    </div>
+
+    <!-- Blood Group -->
+    <div class="mb-4">
+      <label for="blood_group" class="block text-purple-700 font-semibold mb-2">Blood Group</label>
+      <select id="blood_group" name="blood_group" required
+        class="w-full px-3 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500">
+        <option value="" disabled selected>Select blood group</option>
+        <option value="A+">A+</option>
+        <option value="A-">A-</option>
+        <option value="B+">B+</option>
+        <option value="B-">B-</option>
+        <option value="AB+">AB+</option>
+        <option value="AB-">AB-</option>
+        <option value="O+">O+</option>
+        <option value="O-">O-</option>
+      </select>
+    </div>
+
+    <!-- City -->
+    <div class="mb-6">
+      <label for="city" class="block text-purple-700 font-semibold mb-2">City</label>
+      <input type="text" id="city" name="city" required
+        class="w-full px-3 py-2 border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500" />
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit"
+      class="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg transition duration-300 shadow-md">
+      Register as Donor
+    </button>
+  </form>
+
+  <!-- JS for 'Other Organ' input -->
+  <script>
+    function toggleOtherOrganInput(value) {
+      const otherInput = document.getElementById('other-organ-input');
+      if (value === 'Other') {
+        otherInput.style.display = 'block';
+        otherInput.required = true;
+      } else {
+        otherInput.style.display = 'none';
+        otherInput.required = false;
+        otherInput.value = '';
+      }
+    }
+  </script>
+</body>
+</html>

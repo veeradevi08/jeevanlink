@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - JeevanLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to right bottom, #fbcfe8, #d8b4fe); /* Pink-200 to Purple-300, matching signup */
+            color: #333;
+        }
+        .form-card {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+        }
+        .button-style {
+            background: linear-gradient(to right, #6366f1, #8b5cf6); /* Indigo to darker Purple */
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.4);
+        }
+        .button-style:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(99, 102, 241, 0.6);
+        }
+        .input-field {
+            border: 1px solid #d1d5db; /* Gray-300 */
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #a78bfa; /* Purple-400 */
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.3);
+        }
+        .text-header-shadow {
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+    <h1 class="text-4xl font-bold text-purple-800 mb-8 text-header-shadow">Login to <span class="text-pink-600">JeevanLink</span></h1>
+
+    <div class="form-card p-8 rounded-lg max-w-md w-full">
+        <form action="{{ url_for('login') }}" method="POST" class="space-y-6">
+            <div>
+                <label for="email" class="block text-gray-700 font-medium mb-1">Email</label>
+                <input type="email" id="email" name="email" required class="input-field">
+            </div>
+            <div>
+                <label for="password" class="block text-gray-700 font-medium mb-1">Password</label>
+                <input type="password" id="password" name="password" required class="input-field">
+            </div>
+            <button type="submit" class="button-style w-full">Login</button>
+        </form>
+        <p class="mt-6 text-center text-gray-600">
+            Don't have an account? <a href="{{ url_for('signup') }}" class="text-purple-600 hover:underline font-semibold">Sign Up here</a>
+        </p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="fixed bottom-4 right-4 space-y-2 z-50">
+          {% for category, message in messages %}
+            <div class="px-4 py-2 rounded shadow transition-all duration-300
+              {% if category == 'error' %}bg-red-500
+              {% elif category == 'success' %}bg-green-500
+              {% elif category == 'info' %}bg-blue-500
+              {% else %}bg-gray-500{% endif %} text-white">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>

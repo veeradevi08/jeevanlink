@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - JeevanLink</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #cbeaff 50%, #e0c3fc 100%); /* Consistent background */
+            color: #333;
+        }
+        .container-shadow {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+        }
+        .container-shadow:hover {
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+        .card-animate {
+            background-color: rgba(255, 255, 255, 0.98);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border: 1px solid rgba(186, 104, 200, 0.2);
+        }
+        .card-animate:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        .button-transition {
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        }
+        .button-transition:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            opacity: 0.9;
+        }
+        .text-header-shadow {
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .urgent-tag {
+            background-color: #ef4444; /* Red */
+            color: white;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 0.5rem;
+            animation: pulse-animation 1.5s infinite alternate;
+        }
+        @keyframes pulse-animation {
+            from {
+                transform: scale(1);
+                opacity: 1;
+            }
+            to {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center pt-6 px-4 pb-12">
+    <h1 class="text-4xl font-extrabold text-purple-800 mb-8 text-header-shadow">My <span class="text-red-600">Profile</span></h1>
+
+    <div class="bg-white bg-opacity-95 rounded-xl p-8 container-shadow max-w-4xl w-full mb-8">
+        {% if user_info %}
+            <h2 class="text-2xl font-bold text-purple-700 mb-6 text-header-shadow">Personal Information</h2>
+            <p class="text-lg text-gray-700 mb-2"><strong>Name:</strong> {{ user_info.name }}</p>
+            <p class="text-lg text-gray-700 mb-2"><strong>Email:</strong> {{ user_info.email }}</p>
+            <p class="text-lg text-gray-700 mb-8"><strong>Mobile:</strong> {{ user_info.phone }}</p>
+
+            <div class="mt-4 mb-8 text-center">
+                <a href="{{ url_for('edit_profile') }}" class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-full font-semibold button-transition">
+                    Edit Profile
+                </a>
+            </div>
+
+            <h3 class="text-2xl font-semibold text-purple-700 mb-5 border-b-2 border-purple-300 pb-2">My Requests (as Receiver)</h3>
+            {% if user_requests %}
+                <div class="space-y-6 mb-8">
+                    {% for req in user_requests %}
+                    <div class="bg-white p-6 rounded-lg shadow-lg card-animate {% if req.urgent == 1 %}border-l-6 border-red-500 bg-red-50{% endif %}">
+                        <p class="text-md text-gray-700 mb-1">
+                            <strong class="text-pink-600">Needed:</strong>
+                            {% if req.organ == 'Other' and req.organ_other %}
+                                {{ req.organ_other }} (Blood Group: {{ req.blood_group }})
+                            {% else %}
+                                {{ req.organ }} (Blood Group: {{ req.blood_group }})
+                            {% endif %}
+                            {% if req.urgent == 1 %}<span class="urgent-tag">URGENT</span>{% endif %}
+                        </p>
+                        <p class="text-md text-gray-700 mb-1"><strong>Address:</strong> {{ req.requester_address }}</p>
+                        <p class="text-md text-gray-700"><strong>Mobile:</strong> {{ req.requester_phone }}</p>
+                        <p class="text-sm text-gray-500 mt-3">Requested On: {{ req.requested_at }}</p>
+                        <p class="text-sm text-gray-500">Expires On: {{ req.expiry_date if req.expiry_date else 'N/A' }}</p>
+                        {% if req.is_expired %}
+                            <p class="text-red-500 font-bold mt-2">This request has expired.</p>
+                        {% endif %}
+
+                        <h4 class="text-lg font-semibold text-purple-600 mt-4 mb-2">Messages for this Request:</h4>
+                        {% if req.messages %}
+                            <div class="space-y-3 bg-gray-100 p-4 rounded-md border border-gray-200">
+                                {% for msg in req.messages %}
+                                    <div class="border-b border-gray-200 pb-2 last:border-b-0">
+                                        <p class="text-gray-800"><strong>From {{ msg[2] }} ({{ msg[3] }}):</strong></p>
+                                        <p class="text-gray-700 text-sm italic">{{ msg[0] }}</p>
+                                        <p class="text-xs text-gray-500 text-right">{{ msg[1] }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-gray-600 text-sm">No messages received for this request yet.</p>
+                        {% endif %}
+
+                        <form action="{{ url_for('delete_request') }}" method="POST" class="mt-4 text-right">
+                            <input type="hidden" name="request_id" value="{{ req.id }}">
+                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full font-semibold button-transition text-sm">
+                                Delete Request
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-600 text-center text-lg py-4">You have not posted any requests yet.</p>
+            {% endif %}
+
+            <h3 class="text-2xl font-semibold text-purple-700 mb-5 border-b-2 border-purple-300 pb-2">My Expressed Interests (as Donor)</h3>
+            {% if expressed_interests %}
+                <div class="space-y-6">
+                    {% for interest in expressed_interests %}
+                    <div class="bg-white p-6 rounded-lg shadow-lg card-animate {% if interest.is_expired %}opacity-60 grayscale{% endif %}">
+                        <p class="text-md text-gray-700 mb-1">
+                            <strong class="text-blue-600">Interested in:</strong>
+                            {% if interest.organ == 'Other' and interest.organ_other %}
+                                {{ interest.organ_other }} (Blood Group: {{ interest.blood_group }})
+                            {% else %}
+                                {{ interest.organ }} (Blood Group: {{ interest.blood_group }})
+                            {% endif %}
+                            {% if interest.urgent == 1 %}<span class="urgent-tag">URGENT</span>{% endif %}
+                        </p>
+                        <p class="text-md text-gray-700 mb-1"><strong>Requester:</strong> {{ interest.requester_name }}</p>
+                        <p class="text-md text-gray-700"><strong>Requester Phone:</strong> {{ interest.requester_phone }}</p>
+                        <p class="text-md text-gray-700"><strong>Requester Address:</strong> {{ interest.requester_address }}</p>
+                        <p class="text-sm text-gray-500 mt-3">Interest Sent On: {{ interest.interest_timestamp }}</p>
+                        <p class="text-sm text-gray-500">Request Posted On: {{ interest.requested_at }}</p>
+                        <p class="text-sm text-gray-500">Request Expires On: {{ interest.expiry_date if interest.expiry_date else 'N/A' }}</p>
+                        {% if interest.is_expired %}
+                            <p class="text-red-500 font-bold mt-2">This request has expired.</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-600 text-center text-lg py-4">You have not expressed interest in any requests yet.</p>
+            {% endif %}
+
+        {% else %}
+            <p class="text-gray-600 text-center text-lg py-4">User information not found. Please log in.</p>
+        {% endif %}
+
+        <div class="mt-8 text-center">
+            <a href="{{ url_for('donor_dashboard') }}" class="inline-block bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 rounded-full font-semibold button-transition text-lg">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="fixed bottom-4 right-4 space-y-2 z-50">
+          {% for category, message in messages %}
+            <div class="px-4 py-2 rounded shadow transition-all duration-300
+              {% if category == 'error' %}bg-red-500
+              {% elif category == 'success' %}bg-green-500
+              {% elif category == 'info' %}bg-blue-500
+              {% else %}bg-gray-500{% endif %} text-white">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>
